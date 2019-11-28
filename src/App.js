@@ -1,25 +1,66 @@
-import React from "react";
+import React, { useEffect } from "react";
 import HomePage from "./pages/homepage/homepage.component";
 import ShopPage from "./pages/shop/shop.component";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import Header from "./components/header/header.component";
 import SignPage from "./pages/sign/sign.component";
+import CheckoutPage from "./pages/checkout/checkout.component";
+
+import { Switch, Route, Redirect } from "react-router-dom";
+import { createStructuredSelector } from "reselect";
+import { selectCurrentUser } from "./redux/user/user.selectors";
+import Header from "./components/header/header.component";
+
+import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
+import { connect } from "react-redux";
+import { setCurrentUser } from "./redux/user/user.actions";
 
 import "./App.css";
 
-function App() {
+function App({ currentUser, setCurrentUser }) {
+  let unsubscribeFromAuth = null;
+
+  useEffect(() => {
+    unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
+
+        userRef.onSnapshot(snapShot => {
+          setCurrentUser({
+            id: snapShot.id,
+            ...snapShot.data()
+          });
+        });
+      } else {
+        setCurrentUser(userAuth);
+      }
+    });
+    return () => {
+      unsubscribeFromAuth();
+    };
+  }, []);
+
   return (
-    <Router>
+    <div>
       <Header />
-      <div>
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/shop" component={ShopPage} />
-          <Route path="/signup" component={SignPage} />
-        </Switch>
-      </div>
-    </Router>
+      <Switch>
+        <Route exact path="/" component={HomePage} />
+        <Route path="/shop" component={ShopPage} />
+        <Route exact path="/checkout" component={CheckoutPage} />
+        <Route
+          exact
+          path="/signin"
+          render={() => (currentUser ? <Redirect to="/" /> : <SignPage />)}
+        />
+      </Switch>
+    </div>
   );
 }
 
-export default App;
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectCurrentUser
+});
+
+const mapDispatchToProps = dispatch => ({
+  setCurrentUser: user => dispatch(setCurrentUser(user))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

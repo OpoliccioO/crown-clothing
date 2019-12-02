@@ -1,18 +1,16 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import { resolve } from "dns";
-import { reject } from "q";
 
 const config = {
-  apiKey: "AIzaSyDy06cBh1ABix2QawPNYW6izh3oodYrhxk",
-  authDomain: "crown-db-d5506.firebaseapp.com",
-  databaseURL: "https://crown-db-d5506.firebaseio.com",
-  projectId: "crown-db-d5506",
-  storageBucket: "crown-db-d5506.appspot.com",
-  messagingSenderId: "523636086220",
-  appId: "1:523636086220:web:73bb63646144ea59873969",
-  measurementId: "G-T581YP0EFL"
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  databaseURL: process.env.DATABASE_URL,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID,
+  measurementId: process.env.MEASUREMENT_ID
 };
 
 firebase.initializeApp(config);
@@ -88,6 +86,6 @@ export const firestore = firebase.firestore();
 
 export const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
-export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
+//export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
 export default firebase;
